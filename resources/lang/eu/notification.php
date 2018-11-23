@@ -2,7 +2,7 @@
 
 return [
 
-  'likedPhoto'          => 'gustuko du argazkia.',
+  'likedPhoto'          => '-(e)k argazkia gustuko du.',
   'startedFollowingYou' => 'jarraitzen hasi zaizu.',
 
 ];
