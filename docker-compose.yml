@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.1'
 
 # In order to set configuration, please use a .env file in
 # your compose project directory (the same directory as your
@@ -15,7 +15,7 @@ services:
   app:
     # Uncomment to build a local copy of the image
     # build: .
-    image: pixelfed
+    image: urtzai/pixelfed:php7-fpm
     # If you have a traefik running, uncomment this to expose Pixelfed
     # labels:
     #   - traefik.enable=true
@@ -23,11 +23,15 @@ services:
     #   - traefik.port=80
     env_file:
       - ./.env
+    ports:
+        - "9000:9000"
     volumes:
       - "app-storage:/var/www/storage"
+      - "app-files:/var/www/html"
     networks:
       - external
       - internal
+      - nginx-proxy
 
   # Uncomment if you set HORIZON_EMBED to false and wish to run a local worker
   # worker:
@@ -42,8 +46,6 @@ services:
     
   db:
     image: mysql:5.7
-    networks:
-      - internal
     environment:
       - MYSQL_DATABASE=pixelfed
       - MYSQL_USER=${DB_USERNAME}
@@ -51,6 +53,20 @@ services:
       - MYSQL_RANDOM_ROOT_PASSWORD=true
     volumes:
       - "db-data:/var/lib/mysql"
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:latest
+    ports:
+        - "8080:80"
+    volumes:
+      - ./contrib/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+    networks:
+      - nginx-proxy
+        
 
   redis:
     image: redis:4-alpine
@@ -64,9 +80,12 @@ volumes:
   redis-data:
   db-data:
   app-storage:
+  app-html:
 
 networks:
   internal:
     internal: true
   external:
+    driver: bridge
+  nginx-proxy:
     driver: bridge
