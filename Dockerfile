@@ -1,1 +1,1 @@
-contrib/docker/Dockerfile.apache
+contrib/docker/Dockerfile.fpm-alpine

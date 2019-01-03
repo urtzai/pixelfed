@@ -14,7 +14,7 @@ services:
 
   app:
     # Uncomment to build a local copy of the image
-    # build: .
+    build: .
     image: pixelfed
     # If you have a traefik running, uncomment this to expose Pixelfed
     # labels:
@@ -25,9 +25,12 @@ services:
       - ./.env
     volumes:
       - "app-storage:/var/www/storage"
+      - "app-php:/var/www/html"
     networks:
       - external
       - internal
+    depends_on:
+      - db
 
   # Uncomment if you set HORIZON_EMBED to false and wish to run a local worker
   # worker:
@@ -59,11 +62,26 @@ services:
     networks:
       - internal
 
+  nginx:
+    image: nginx:stable-alpine
+    volumes:
+      - ./contrib/nginx.template:/etc/nginx/conf.d/nginx.template
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+    networks:
+      - external
+    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/nginx.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+
 # Adjust your volume data in order to store data where you wish
 volumes:
   redis-data:
   db-data:
   app-storage:
+  app-php:
 
 networks:
   internal:
